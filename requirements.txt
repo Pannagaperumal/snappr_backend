@@ -1,0 +1,4 @@
+Django==4.2.7
+django-crispy-forms==2.1
+djangorestframework==3.15.1
+drf-yasg==3.10.3
