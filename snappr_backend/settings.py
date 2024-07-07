@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'accounts',
     'rest_framework',
     'drf_yasg',
     'face_api', 
@@ -41,6 +42,55 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+
+MONGODB_DATABASES = {
+    'default': {
+        'ENGINE': 'djongo',
+        'NAME': 'Snappr_db',
+        'ENFORCE_SCHEMA': False,
+        'CLIENT': {
+            'host': 'mongodb+srv://admin_snappr:3QXicaeVRNhrw5a@cluster0.iy3i2dt.mongodb.net/',
+            'username': 'admin_snappr',
+            'port':27017,
+            'password': '3QXicaeVRNhrw5a',
+            'authMechanism': 'SCRAM-SHA-1'
+        }
+    }
+}
+
+# settings.py
+# settings.py
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'ERROR',  # Only log error messages
+            'class': 'logging.FileHandler',
+            'filename': 'errors.log',  # Log errors to errors.log
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',  # Only log error messages
+            'propagate': True,
+        },
+        'api': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',  # Only log error messages
+            'propagate': True,
+        },
+    },
+}
+
+
+
 
 # Configure media settings
 MEDIA_URL = '/media/'

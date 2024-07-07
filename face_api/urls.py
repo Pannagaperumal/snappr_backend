@@ -19,11 +19,13 @@ Including another URLconf
 from django.urls import path
 from django.urls import include, path
 from . import views
+from .views import UploadFilesView, GetImagesView
+
 
 
 
 
 urlpatterns = [
-    path('upload/', views.upload_images, name='upload_images'),
-    path('search/', views.search_by_reference_face, name='search_by_reference_face'),
+    path('upload/', UploadFilesView.as_view(), name='upload_files'),
+    path('get_images/', GetImagesView.as_view(), name='get_images'),
 ]

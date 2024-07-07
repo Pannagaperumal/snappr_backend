@@ -17,7 +17,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 # face_api_project/urls.py
-from .swagger import urlpatterns as swagger_urls
 
 
 from django.contrib import admin
@@ -28,6 +27,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('face_api.urls')),
+    path('users/', include('accounts.urls')),
+    path('api-auth/', include('rest_framework.urls'))    
+
 ]
 
 if settings.DEBUG:

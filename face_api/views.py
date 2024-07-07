@@ -1,79 +1,77 @@
-# face_api/views.py
-
-from rest_framework import status
-from rest_framework.decorators import api_view
+# api/views.py
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import UploadedImage, DetectedFace
-from snappr_backend import settings
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework import status
+from django.conf import settings
+from werkzeug.utils import secure_filename
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 import os
-import cv2
+from .utils import *
 
-@api_view(['POST'])
-def upload_images(request):
-    uploaded_files = request.FILES.getlist('images')
-    print("Received files:", uploaded_files)
-    
-    if not uploaded_files:
-        return Response({"error": "No files uploaded"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    for uploaded_file in uploaded_files:
-        uploaded_image = UploadedImage.objects.create(image=uploaded_file)
-        print("Created UploadedImage:", uploaded_image)
-        uploaded_image.detect_faces()
-    
-    return Response(status=status.HTTP_201_CREATED)
+class UploadFilesView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
 
-@api_view(['POST'])
-def search_by_reference_face(request):
-    reference_image = request.FILES['reference_image']
+    def post(self, request, *args, **kwargs):
+        files = request.FILES.getlist('files')
+        if not files:
+            return Response({"error": "No file part"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Save the reference image temporarily
-    reference_image_path = os.path.join(settings.MEDIA_ROOT, 'reference.jpg')
-    with open(reference_image_path, 'wb+') as temp_file:
-        for chunk in reference_image.chunks():
-            temp_file.write(chunk)
+        for file in files:
+            filename = secure_filename(file.name)
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            with open(file_path, 'wb+') as destination:
+                for chunk in file.chunks():
+                    destination.write(chunk)
 
-    # Perform face detection on the reference image
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    ref_img = cv2.imread(reference_image_path)
-    ref_gray = cv2.cvtColor(ref_img, cv2.COLOR_BGR2GRAY)
-    ref_faces = face_cascade.detectMultiScale(ref_gray, 1.3, 5)
+        image_paths = get_image_paths(UPLOAD_FOLDER)
+        data = process_images(image_paths)
 
-    if len(ref_faces) == 0:
-        return Response({"error": "No face detected in reference image"}, status=status.HTTP_400_BAD_REQUEST)
+        threshold = float(request.data.get('threshold', DEFAULT_THRESHOLD))
+        iterations = int(request.data.get('iterations', DEFAULT_ITERATIONS))
 
-    (x, y, w, h) = ref_faces[0]
-    ref_face_img = ref_img[y:y+h, x:x+w]
+        G = draw_graph(data, threshold)
+        G = chinese_whispers(G, iterations)
+        sort_images(G)
 
-    matched_images = []
-    for detected_face in DetectedFace.objects.all():
-        detected_face_img_path = os.path.join(settings.MEDIA_ROOT, str(detected_face.face_image))
-        detected_face_img = cv2.imread(detected_face_img_path)
-
-        if detected_face_img is None:
-            continue  # Skip if the image couldn't be read
-
-        detected_gray = cv2.cvtColor(detected_face_img, cv2.COLOR_BGR2GRAY)
-        detected_faces = face_cascade.detectMultiScale(detected_gray, 1.3, 5)
-
-        if len(detected_faces) == 0:
-            continue  # Skip if no face is detected in the database image
-
-        (dx, dy, dw, dh) = detected_faces[0]
-        detected_face_region = detected_face_img[dy:dy+dh, dx:dx+dw]
-
-        if detected_face_region.shape == ref_face_img.shape:
-            difference = cv2.subtract(detected_face_region, ref_face_img)
-            if not np.any(difference):
-                matched_images.append(detected_face.uploaded_image.url)
-            else:
-                print(f"Faces did not match: {detected_face_img_path}")
-        else:
-            print(f"Shapes did not match: {detected_face_img_path}")
-
-    if not matched_images:
-        print("No matched images found")
-
-    return Response(matched_images, status=status.HTTP_200_OK)
+        return Response({"message": "Files uploaded and processed successfully"}, status=status.HTTP_200_OK)
 
 
+class GetImagesView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        reference_image = request.FILES.get('reference_image')
+        if not reference_image:
+            return Response({"error": "No reference image provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        reference_path = os.path.join(UPLOAD_FOLDER, secure_filename(reference_image.name))
+        with open(reference_path, 'wb+') as destination:
+            for chunk in reference_image.chunks():
+                destination.write(chunk)
+
+        reference_embedding = compute_embedding(reference_path, facenet_model)
+
+        if reference_embedding is None or reference_embedding.shape[0] != 1:
+            return Response({"error": "Invalid reference image"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with open(EMBEDDINGS_FILE, "rb") as f:
+            data = pickle.load(f)
+
+        data.append({"path": reference_path, "embedding": reference_embedding[0]})
+
+        threshold = float(request.data.get('threshold', DEFAULT_THRESHOLD))
+        iterations = int(request.data.get('iterations', DEFAULT_ITERATIONS))
+
+        G = draw_graph(data, threshold)
+        G = chinese_whispers(G, iterations)
+
+        reference_node = len(data)
+        destination = os.path.join(SORTED_FOLDER, "reference_matches")
+        similar_images = get_person(G, reference_node, destination)
+
+        return Response({"similar_images": similar_images}, status=status.HTTP_200_OK)
