@@ -44,8 +44,7 @@ INSTALLED_APPS = [
 ]
 
 
-MONGODB_DATABASES = {
-    'default': {
+MONGO_DB ={
         'ENGINE': 'djongo',
         'NAME': 'Snappr_db',
         'ENFORCE_SCHEMA': False,
@@ -57,7 +56,6 @@ MONGODB_DATABASES = {
             'authMechanism': 'SCRAM-SHA-1'
         }
     }
-}
 
 # settings.py
 # settings.py
@@ -129,14 +127,6 @@ WSGI_APPLICATION = 'snappr_backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
