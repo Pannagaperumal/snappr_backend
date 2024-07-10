@@ -49,10 +49,10 @@ MONGO_DB ={
         'NAME': 'Snappr_db',
         'ENFORCE_SCHEMA': False,
         'CLIENT': {
-            'host': 'mongodb+srv://admin_snappr:3QXicaeVRNhrw5a@cluster0.iy3i2dt.mongodb.net/',
+            'host': '',
             'username': 'admin_snappr',
             'port':27017,
-            'password': '3QXicaeVRNhrw5a',
+            'password': '',
             'authMechanism': 'SCRAM-SHA-1'
         }
     }
