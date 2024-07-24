@@ -14,6 +14,28 @@ import os
 from .utils import *
 
 class UploadFilesView(APIView):
+    """
+    API view for uploading and processing files.
+
+    This view accepts a list of files and saves them to a specified upload folder.
+    It then processes the uploaded images and performs various operations on them.
+
+    Supported HTTP Methods:
+        - POST: Uploads and processes the files.
+
+    Request Parameters:
+        - files: List of files to be uploaded.
+
+    Optional Request Parameters:
+        - threshold: Threshold value for image processing (default: DEFAULT_THRESHOLD).
+        - iterations: Number of iterations for image processing (default: DEFAULT_ITERATIONS).
+
+    Returns:
+        - If successful, returns a response with a success message.
+        - If no files are provided, returns a response with an error message.
+
+    """
+
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
@@ -42,6 +64,31 @@ class UploadFilesView(APIView):
 
 
 class GetImagesView(APIView):
+    """
+    API view for getting similar images based on a reference image.
+
+    This view accepts a POST request with a reference image file and optional parameters for threshold and iterations.
+    It computes the embedding of the reference image, compares it with other embeddings stored in a file,
+    and returns a list of similar images based on a graph-based clustering algorithm.
+
+    Parameters:
+    - reference_image: The reference image file to compare with.
+    - threshold (optional): The threshold value for similarity comparison (default: 0.5).
+    - iterations (optional): The number of iterations for the clustering algorithm (default: 10).
+
+    Returns:
+    - similar_images: A list of similar images to the reference image.
+
+    If the reference image is not provided or is invalid, an error response is returned.
+
+    Note: This view assumes the presence of the following variables/constants:
+    - UPLOAD_FOLDER: The folder path where uploaded images are stored.
+    - EMBEDDINGS_FILE: The file path where embeddings are stored.
+    - SORTED_FOLDER: The folder path where sorted images will be saved.
+    - DEFAULT_THRESHOLD: The default threshold value for similarity comparison.
+    - DEFAULT_ITERATIONS: The default number of iterations for the clustering algorithm.
+    """
+
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
