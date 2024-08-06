@@ -50,7 +50,7 @@ MONGO_DB ={
         'ENFORCE_SCHEMA': False,
         'CLIENT': {
             'host': '',
-            'username': 'admin_snappr',
+            'username': '',
             'port':27017,
             'password': '',
             'authMechanism': 'SCRAM-SHA-1'
