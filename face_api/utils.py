@@ -10,6 +10,8 @@ from multiprocessing import Pool, cpu_count
 from math import ceil
 from keras_facenet import FaceNet
 
+import logging 
+
 UPLOAD_FOLDER = 'uploads'
 SORTED_FOLDER = 'sorted_images'
 TEMP_FOLDER = 'temp'
@@ -24,6 +26,8 @@ for folder in [UPLOAD_FOLDER, SORTED_FOLDER, TEMP_FOLDER]:
 
 # Initialize FaceNet model
 facenet_model = FaceNet()
+
+logger = logging.getLogger(__name__)
 
 # Utility functions here...
 # (Include get_image_paths, compute_embedding, get_similarity, draw_graph, chinese_whispers, save_embeddings, process_images, sort_images, get_person)

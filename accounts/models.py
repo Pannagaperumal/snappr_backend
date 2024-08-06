@@ -6,9 +6,9 @@ from django.db import models
 from pymongo import MongoClient
 from django.conf import settings
 
-client = MongoClient(settings.MONGODB_DATABASES['default']['CLIENT']['host'], 
-                     settings.MONGODB_DATABASES['default']['CLIENT']['port'])
-db = client[settings.MONGODB_DATABASES['default']['NAME']]
+client = MongoClient(settings.MONGO_DB['CLIENT']['host'], 
+                     settings.MONGO_DB['CLIENT']['port'])
+db = client[settings.MONGO_DB['NAME']]
 
 class User:
     def __init__(self, username, email, password):
