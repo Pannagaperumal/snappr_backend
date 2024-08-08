@@ -5,6 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password, check_password
 from .models import User
 import json
+import jwt
+import datetime
+from django.conf import settings
+
 
 @csrf_exempt
 def signup(request):
@@ -37,7 +41,16 @@ def login(request):
         user_data = User.find_by_username(username)
         
         if user_data and check_password(password, user_data['password']):
-            return JsonResponse({'message': 'Login successful.'}, status=200)
+            # Create JWT token
+            payload = {
+                'username': user_data['username'],  # Include the user ID in the token payload
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24),  # Token expiration time (24 hours)
+                'iat': datetime.datetime.utcnow()  # Token issued at time
+            }
+            token = jwt.encode(payload, "udgyfiudsyfgidusyfg", algorithm='HS256')
+
+            return JsonResponse({'username':username,'token': token, 'message': 'Login successful.'}, status=200)
+
         else:
             return JsonResponse({'error': 'Invalid credentials.'}, status=401)
     else:

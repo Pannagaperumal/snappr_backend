@@ -9,7 +9,6 @@ import pickle
 import logging
 from werkzeug.utils import secure_filename
 
-from .mongodb_utils import save_image_to_gridfs, get_image_from_gridfs, save_embeddings_to_mongo, get_embeddings_from_mongo
 from .utils import (
     get_image_paths, process_images, draw_graph, chinese_whispers, sort_images, compute_embedding, get_person,UPLOAD_FOLDER,
 )
@@ -18,7 +17,6 @@ from .utils import (
 logger = logging.getLogger(__name__)
 
 import os
-from .mongodb_utils import save_image_to_gridfs, get_image_from_gridfs, save_embeddings_to_mongo, get_embeddings_from_mongo
 from .utils import (
     get_image_paths, process_images, draw_graph, chinese_whispers, sort_images, compute_embedding, get_person
 )
