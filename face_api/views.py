@@ -2,6 +2,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 # from django.conf import settings
 from .utils import *
 import os
@@ -45,7 +48,35 @@ class UploadFilesView(APIView):
     """
 
     parser_classes = (MultiPartParser, FormParser)
+    @swagger_auto_schema(
+        operation_description="Upload and process images.",
+        manual_parameters=[
+            openapi.Parameter(
+                name='files',
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_FILE,
+                description='List of files to upload',
+                required=True,
+            ),
+            openapi.Parameter(
+                name='threshold',
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_NUMBER,
+                description='Threshold value for image processing (default: 0.5)',
+                required=False,
+            ),
+            openapi.Parameter(
+                name='iterations',
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_INTEGER,
+                description='Number of iterations for image processing (default: 10)',
+                required=False,
+            ),
+        ],
+        responses={200: "Files uploaded and processed successfully", 400: "No file part"},
+        tags=["Face API"]
 
+    )
     def post(self, request, *args, **kwargs):
         files = request.FILES.getlist('files')
         if not files:
@@ -106,7 +137,35 @@ class GetImagesView(APIView):
     """
 
     parser_classes = (MultiPartParser, FormParser)
+    @swagger_auto_schema(
+        operation_description="Get similar images based on a reference image.",
+        manual_parameters=[
+            openapi.Parameter(
+                name='reference_image',
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_FILE,
+                description='The reference image file',
+                required=True,
+            ),
+            openapi.Parameter(
+                name='threshold',
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_NUMBER,
+                description='Threshold value for similarity comparison (default: 0.5)',
+                required=False,
+            ),
+            openapi.Parameter(
+                name='iterations',
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_INTEGER,
+                description='Number of iterations for clustering (default: 10)',
+                required=False,
+            ),
+        ],
+        responses={200: "Similar images retrieved successfully", 400: "No reference image provided"},
+        tags=["Face API"]
 
+    )
     def post(self, request, *args, **kwargs):
         reference_image = request.FILES.get('reference_image')
         if not reference_image:
